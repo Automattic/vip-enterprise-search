@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<ruleset name="vip-enterprise-search">
+	<description>Custom ruleset for vip-enterprise-search</description>
+
+	<file>src</file>
+	<file>tests/php</file>
+
+	<exclude-pattern>/src/elasticpress/*</exclude-pattern>
+	<exclude-pattern>/src/es-wp-query/*</exclude-pattern>
+	<exclude-pattern>/node_modules/*</exclude-pattern>
+
+	<arg name="basepath" value="."/>
+	<arg name="parallel" value="8"/>
+	<arg name="extensions" value="php"/>
+	<arg value="s"/>
+
+	<rule ref="PHPCompatibilityWP"/>
+	<config name="testVersion" value="8.0-"/>
+	<rule ref="WordPress-Extra"/>
+	<config name="minimum_supported_wp_version" value="5.8"/>
+
+	<rule ref="WordPress-VIP-Go">
+		<exclude name="PEAR.Functions.FunctionCallSignature.ContentAfterOpenBracket" />
+		<exclude name="PEAR.Functions.FunctionCallSignature.MultipleArguments" />
+		<exclude name="PEAR.Functions.FunctionCallSignature.CloseBracketLine" />
+		<exclude name="Universal.Arrays.DisallowShortArraySyntax.Found" />
+		<exclude name="Universal.Operators.DisallowShortTernary.Found" />
+		<!-- Generates too many false positives -->
+		<exclude name="WordPress.WP.CapitalPDangit.Misspelled" />
+		<!-- We use trigger_error extensively -->
+		<exclude name="WordPress.PHP.DevelopmentFunctions.error_log_trigger_error" />
+		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames" />
+	</rule>
+</ruleset>

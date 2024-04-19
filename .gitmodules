@@ -1,0 +1,3 @@
+[submodule "src/elasticpress"]
+	path = src/elasticpress
+	url = https://github.com/Automattic/ElasticPress.git

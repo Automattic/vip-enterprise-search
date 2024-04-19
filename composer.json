@@ -1,0 +1,31 @@
+{
+    "name": "automattic/vip-enterprise-search",
+    "description": "Power your site search and other queries with Elasticsearch",
+    "type": "wordpress-plugin",
+    "require-dev": {
+        "automattic/vipwpcs": "^3.0",
+        "johnpbloch/wordpress-core": "^6.5",
+        "phpcompatibility/phpcompatibility-wp": "^2.1",
+        "wp-cli/wp-cli": "^2.10",
+        "wp-phpunit/wp-phpunit": "^6.5",
+        "yoast/phpunit-polyfills": "^2.0"
+    },
+    "authors": [
+        {
+            "name": "Automattic"
+        }
+    ],
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        },
+        "platform": {
+            "php": "8.0"
+        },
+        "sort-packages": true
+    },
+    "scripts": {
+        "phpcs": "phpcs",
+        "phpcbf": "phpcbf"
+    }
+}
