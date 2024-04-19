@@ -2,6 +2,8 @@
 
 namespace Automattic\VIP\Search;
 
+use Automattic\VIP\Search\Commands\CoreCommand;
+use ElasticPress\Command;
 use WP_CLI;
 use WP_Error;
 use WP_Post;
@@ -657,7 +659,7 @@ class Search {
 			WP_CLI::add_command( 'vip-search queue', __NAMESPACE__ . '\Commands\QueueCommand' );
 			WP_CLI::add_command( 'vip-search index-versions', __NAMESPACE__ . '\Commands\VersionCommand' );
 			WP_CLI::add_command( 'vip-search documents', __NAMESPACE__ . '\Commands\DocumentCommand' );
-			$vip_search_core_command = new \Automattic\VIP\Search\Commands\CoreCommand( new \ElasticPress\Command() );
+			$vip_search_core_command = new CoreCommand( new Command() );
 			WP_CLI::add_command( 'vip-search', $vip_search_core_command );
 		}
 	}

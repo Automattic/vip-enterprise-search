@@ -292,7 +292,7 @@ class Queue {
 				return new WP_Error( 'invalid-indexable', sprintf( 'Indexable not found for type %s', $indexable_slug ) );
 			}
 
-			$index_version = \Automattic\VIP\Search\Search::instance()->versioning->get_current_version_number( $indexable );
+			$index_version = Search::instance()->versioning->get_current_version_number( $indexable );
 		}
 
 		return $index_version;
@@ -908,13 +908,13 @@ class Queue {
 
 				// If the index version no longer exists, just delete the jobs and don't bother with stats or anything
 				// since the jobs weren't actually processed
-				$index_versions = \Automattic\VIP\Search\Search::instance()->versioning->get_versions( $indexable );
+				$index_versions = Search::instance()->versioning->get_versions( $indexable );
 				if ( ! array_key_exists( intval( $index_version ), $index_versions ) ) {
 					$this->delete_jobs( $jobs );
 					continue;
 				}
 
-				\Automattic\VIP\Search\Search::instance()->versioning->set_current_version_number( $indexable, $index_version );
+				Search::instance()->versioning->set_current_version_number( $indexable, $index_version );
 
 				$ids = wp_list_pluck( $jobs, 'object_id' );
 
@@ -942,7 +942,7 @@ class Queue {
 				// Mark them as done in queue
 				$this->delete_jobs( $jobs );
 
-				\Automattic\VIP\Search\Search::instance()->versioning->reset_current_version_number( $indexable );
+				Search::instance()->versioning->reset_current_version_number( $indexable );
 			}
 		}
 	}

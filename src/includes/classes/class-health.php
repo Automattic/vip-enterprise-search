@@ -2,8 +2,9 @@
 
 namespace Automattic\VIP\Search;
 
+use ElasticPress\Elasticsearch;
 use ElasticPress\Indexables;
-
+use WP_CLI;
 use WP_Query;
 use WP_User_Query;
 use WP_Error;
@@ -57,20 +58,20 @@ class Health {
 	 *
 	 * Useful for overriding (dependency injection) for tests
 	 *
-	 * @var \Automattic\VIP\Search\Search
+	 * @var Search
 	 */
 	public $search;
 
-	/** @var \ElasticPress\Indexables */
+	/** @var Indexables */
 	public $indexables;
 
-	/** @var \ElasticPress\Elasticsearch */
+	/** @var Elasticsearch */
 	public $elasticsearch;
 
-	public function __construct( \Automattic\VIP\Search\Search $search ) {
+	public function __construct( Search $search ) {
 		$this->search        = $search;
-		$this->indexables    = \ElasticPress\Indexables::factory();
-		$this->elasticsearch = \ElasticPress\Elasticsearch::factory();
+		$this->indexables    = Indexables::factory();
+		$this->elasticsearch = Elasticsearch::factory();
 	}
 
 	/**
@@ -221,7 +222,7 @@ class Health {
 			return new WP_Error( 'es_users_query_error', 'failure retrieving user indexable from ES #vip-search' );
 		}
 
-		$search = \Automattic\VIP\Search\Search::instance();
+		$search = Search::instance();
 
 		if ( $options['index_version'] ) {
 			$version_result = $search->versioning->set_current_version_number( $users, $options['index_version'] );
@@ -270,7 +271,7 @@ class Health {
 
 		$results = [];
 
-		$search = \Automattic\VIP\Search\Search::instance();
+		$search = Search::instance();
 
 		if ( $options['index_version'] ) {
 			$version_result = $search->versioning->set_current_version_number( $posts, $options['index_version'] );
@@ -335,7 +336,7 @@ class Health {
 			return new WP_Error( 'es_terms_query_error', 'failure retrieving term indexable from ES #vip-search' );
 		}
 
-		$search = \Automattic\VIP\Search\Search::instance();
+		$search = Search::instance();
 
 		if ( $options['index_version'] ) {
 			$version_result = $search->versioning->set_current_version_number( $terms, $options['index_version'] );
@@ -381,7 +382,7 @@ class Health {
 			return new WP_Error( 'es_comments_query_error', 'failure retrieving comment indexable from ES #vip-search' );
 		}
 
-		$search = \Automattic\VIP\Search\Search::instance();
+		$search = Search::instance();
 
 		if ( $options['index_version'] ) {
 			$version_result = $search->versioning->set_current_version_number( $comments, $options['index_version'] );
@@ -491,7 +492,7 @@ class Health {
 			return new WP_Error( 'es_posts_query_error', 'Failure retrieving post indexable #vip-search' );
 		}
 
-		$is_cli = defined( 'WP_CLI' ) && WP_CLI;
+		$is_cli = defined( 'WP_CLI' ) && constant( 'WP_CLI' );
 
 		$results = [];
 
@@ -539,7 +540,7 @@ class Health {
 
 			// Limit $results size
 			if ( count( $results ) > $max_diff_size && ( $is_cli && ! $silent ) ) {
-				printf( "...%s\n", \WP_CLI::colorize( '🛑' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				printf( "...%s\n", WP_CLI::colorize( '🛑' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 
 				$error = new WP_Error( 'es_diff_size_limit_reached', sprintf( 'Reached diff size limit of %d elements, aborting', $max_diff_size ) );
 
@@ -759,7 +760,7 @@ class Health {
 	}
 
 	public static function filter_expected_post_rows( $rows, $post_types, $post_statuses ) {
-		$filtered = array_filter( $rows, function ( $row ) use ( $post_types, $post_statuses ) {
+		return array_filter( $rows, function ( $row ) use ( $post_types, $post_statuses ) {
 			if ( ! in_array( $row->post_type, $post_types, true ) ) {
 				return false;
 			}
@@ -772,8 +773,6 @@ class Health {
 
 			return ! $skipped;
 		} );
-
-		return $filtered;
 	}
 
 	public static function simplified_diff_document_and_prepared_document( $document, $prepared_document ) {
@@ -874,7 +873,7 @@ class Health {
 					 * @return int                  Job priority
 					 */
 					$priority = apply_filters( 'vip_healthcheck_reindex_priority', self::REINDEX_JOB_DEFAULT_PRIORITY, $id, $type );
-					\Automattic\VIP\Search\Search::instance()->queue->queue_object( $id, $type, [ 'priority' => $priority ] );
+					Search::instance()->queue->queue_object( $id, $type, [ 'priority' => $priority ] );
 					break;
 				case 'extra_in_index':
 					\ElasticPress\Indexables::factory()->get( $type )->delete( $id, false );
@@ -929,9 +928,7 @@ class Health {
 	public static function get_last_post_id() {
 		$last_db_id = self::get_last_db_post_id();
 		$last_es_id = self::get_last_es_post_id();
-		$last       = max( $last_db_id, $last_es_id );
-
-		return $last;
+		return max( $last_db_id, $last_es_id );
 	}
 
 	public static function get_document_ids_for_batch( $start_post_id, $last_post_id ) {

@@ -5,6 +5,7 @@ namespace Automattic\VIP\Search\Commands;
 use WP_CLI;
 
 use Automattic\VIP\Search\Queue\Schema;
+use Automattic\VIP\Search\Search;
 use WP_CLI_Command;
 
 require_once __DIR__ . '/../class-health.php';
@@ -35,7 +36,7 @@ class QueueCommand extends WP_CLI_Command {
 			WP_CLI::error( __( '--format only accepts the following values: table, json, csv, yaml' ) );
 		}
 
-		$search = \Automattic\VIP\Search\Search::instance();
+		$search = Search::instance();
 		$stats  = $search->queue->get_queue_stats();
 		$info   = [
 			[
@@ -67,7 +68,7 @@ class QueueCommand extends WP_CLI_Command {
 			WP_CLI::confirm( 'Are you sure you want to truncate the existing indexing queue? Any items currently queued will be dropped' );
 		}
 
-		$search = \Automattic\VIP\Search\Search::instance();
+		$search = Search::instance();
 		$queue  = $search->queue;
 		$schema = new Schema();
 		$result = $queue->empty_queue();

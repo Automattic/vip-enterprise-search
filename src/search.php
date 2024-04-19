@@ -28,8 +28,8 @@ require_once __DIR__ . '/includes/classes/class-logger.php';
 require_once __DIR__ . '/includes/functions/utils.php';
 require_once __DIR__ . '/includes/classes/class-search.php';
 
-if ( \Automattic\VIP\Search\Search::are_es_constants_defined() ) {
-	$search_plugin = \Automattic\VIP\Search\Search::instance();
+if ( Search::are_es_constants_defined() ) {
+	$search_plugin = Search::instance();
 
 	require_once __DIR__ . '/search-dev-tools/search-dev-tools.php';
 

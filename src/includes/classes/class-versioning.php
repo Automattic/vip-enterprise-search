@@ -697,7 +697,7 @@ class Versioning {
 			return new WP_Error( 'failed-to-delete-index', sprintf( 'Failed to delete index version %d for indexable %s from Elasticsearch', $version_number, $indexable->slug ) );
 		}
 
-		\Automattic\VIP\Search\Search::instance()->queue->delete_jobs_for_index_version( $indexable->slug, $version_number );
+		Search::instance()->queue->delete_jobs_for_index_version( $indexable->slug, $version_number );
 
 		unset( $versions[ $version_number ] );
 
@@ -810,7 +810,7 @@ class Versioning {
 			// Other index versions, besides active
 			$inactive_versions = $this->get_inactive_versions( $indexable );
 
-			$queue = \Automattic\VIP\Search\Search::instance()->queue;
+			$queue = Search::instance()->queue;
 
 			// There were changes for active version - now we need to loop over every object that was queued for the active version and replicate that job to the other versions
 			foreach ( $inactive_versions as $version ) {
@@ -856,7 +856,7 @@ class Versioning {
 			return $bail;
 		}
 
-		$queue = \Automattic\VIP\Search\Search::instance()->queue;
+		$queue = Search::instance()->queue;
 
 		foreach ( $inactive_versions as $version ) {
 			$options = array(

@@ -2,6 +2,9 @@
 
 namespace Automattic\VIP\Search\Commands;
 
+use Automattic\VIP\Search\Health;
+use Automattic\VIP\Search\Search;
+use ElasticPress\Indexables;
 use WP_CLI;
 use WP_CLI_Command;
 use WP_Error;
@@ -30,7 +33,7 @@ class HealthCommand extends WP_CLI_Command {
 	 * @subcommand stop-validate-contents
 	 */
 	public function stop_validate_contents( $args, $assoc_args ) {
-		$health = new \Automattic\VIP\Search\Health( \Automattic\VIP\Search\Search::instance() );
+		$health = new Health( Search::instance() );
 
 		if ( ! $health->is_validate_content_ongoing() ) {
 			WP_CLI::error( 'There is no validate-contents run ongoing' );
@@ -60,7 +63,7 @@ class HealthCommand extends WP_CLI_Command {
 			WP_CLI::error( __( '--format only accepts the following values: table, json, csv, yaml' ) );
 		}
 
-		$search = \Automattic\VIP\Search\Search::instance();
+		$search = Search::instance();
 
 		$search_rate_limited   = $search::is_rate_limited();
 		$indexing_rate_limited = $search->queue->is_indexing_ratelimited();
@@ -108,7 +111,7 @@ class HealthCommand extends WP_CLI_Command {
 	 * @subcommand validate-counts
 	 */
 	public function validate_counts( $args, $assoc_args ) {
-		foreach ( \ElasticPress\Indexables::factory()->get_all( null, true ) as $indexable_slug ) {
+		foreach ( Indexables::factory()->get_all( null, true ) as $indexable_slug ) {
 			$this->validate_indexable_count( $indexable_slug, $assoc_args );
 			WP_CLI::line( '' );
 		}
@@ -194,7 +197,7 @@ class HealthCommand extends WP_CLI_Command {
 	 * @param array $assoc_args CLI arguments
 	 */
 	private function validate_indexable_count( $indexable_slug, $assoc_args ) {
-		$indexable = \ElasticPress\Indexables::factory()->get( $indexable_slug );
+		$indexable = Indexables::factory()->get( $indexable_slug );
 		if ( ! $indexable ) {
 			WP_CLI::line( "Cannot find indexable '$indexable_slug', probably the feature is not enabled\n" );
 			return;
@@ -253,7 +256,7 @@ class HealthCommand extends WP_CLI_Command {
 	 * @param int $version Validate only a specific version instead of all of them
 	 */
 	private function validate_indexable_count_for_site( $indexable_slug, $version = null ) {
-		$search = \Automattic\VIP\Search\Search::instance();
+		$search = Search::instance();
 
 		$versions = [];
 		$results  = [];
@@ -262,7 +265,7 @@ class HealthCommand extends WP_CLI_Command {
 			$versions[] = $version;
 		} else {
 			// Defaults to all versions
-			$indexable = \ElasticPress\Indexables::factory()->get( $indexable_slug );
+			$indexable = Indexables::factory()->get( $indexable_slug );
 
 			if ( ! $indexable ) {
 				WP_CLI::line( "Cannot find indexable '$indexable_slug', probably the feature is not enabled" );
@@ -277,22 +280,22 @@ class HealthCommand extends WP_CLI_Command {
 		foreach ( $versions as $version_number ) {
 			switch ( $indexable_slug ) {
 				case 'post':
-					$results = \Automattic\VIP\Search\Health::validate_index_posts_count( array(
+					$results = Health::validate_index_posts_count( array(
 						'index_version' => $version_number,
 					) );
 					break;
 				case 'user':
-					$results = \Automattic\VIP\Search\Health::validate_index_users_count( array(
+					$results = Health::validate_index_users_count( array(
 						'index_version' => $version_number,
 					) );
 					break;
 				case 'term':
-					$results = \Automattic\VIP\Search\Health::validate_index_terms_count( array(
+					$results = Health::validate_index_terms_count( array(
 						'index_version' => $version_number,
 					) );
 					break;
 				case 'comment':
-					$results = \Automattic\VIP\Search\Health::validate_index_comments_count( array(
+					$results = Health::validate_index_comments_count( array(
 						'index_version' => $version_number,
 					) );
 					break;
@@ -415,7 +418,7 @@ class HealthCommand extends WP_CLI_Command {
 	 * @subcommand validate-contents
 	 */
 	public function validate_contents( $args, $assoc_args ) {
-		$health = new \Automattic\VIP\Search\Health( \Automattic\VIP\Search\Search::instance() );
+		$health = new Health( Search::instance() );
 
 		$results = $health->validate_index_posts_content( $assoc_args );
 

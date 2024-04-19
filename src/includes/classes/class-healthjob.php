@@ -3,6 +3,7 @@
 namespace Automattic\VIP\Search;
 
 use Automattic\VIP\Search\Health;
+use ElasticPress\Indexables;
 
 require_once __DIR__ . '/class-health.php';
 
@@ -39,7 +40,7 @@ class HealthJob {
 	 *
 	 * Useful for overriding (dependency injection) for tests
 	 *
-	 * @var \Automattic\VIP\Search\Search
+	 * @var Search
 	 */
 	public $search;
 
@@ -48,14 +49,14 @@ class HealthJob {
 	 *
 	 * Useful for overriding (dependency injection) for tests
 	 *
-	 * @var \ElasticPress\Indexables
+	 * @var Indexables
 	 */
 	public $indexables;
 
-	public function __construct( \Automattic\VIP\Search\Search $search ) {
+	public function __construct( Search $search ) {
 		$this->search     = $search;
 		$this->health     = new Health( $search );
-		$this->indexables = \ElasticPress\Indexables::factory();
+		$this->indexables = Indexables::factory();
 	}
 
 	/**

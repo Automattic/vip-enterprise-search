@@ -3,6 +3,7 @@
 namespace Automattic\VIP\Search\Commands;
 
 use Automattic\VIP\Search\Logger;
+use Automattic\VIP\Search\Search;
 use WP_CLI;
 use WP_CLI\Utils;
 use ElasticPress\Elasticsearch;
@@ -43,7 +44,7 @@ class CoreCommand {
 	}
 
 	private function shift_version_after_index( $assoc_args ) {
-		$search = \Automattic\VIP\Search\Search::instance();
+		$search = Search::instance();
 
 		$indexables   = $this->parse_indexables( $assoc_args );
 		$skip_confirm = isset( $assoc_args['skip-confirm'] ) && $assoc_args['skip-confirm'];
@@ -93,7 +94,7 @@ class CoreCommand {
 	}
 
 	private function set_version( $indexable, $version ) {
-		$search = \Automattic\VIP\Search\Search::instance();
+		$search = Search::instance();
 
 		$result = $search->versioning->set_current_version_number( $indexable, $version );
 
@@ -140,7 +141,7 @@ class CoreCommand {
 			}
 
 			if ( $version_number ) {
-				$search = \Automattic\VIP\Search\Search::instance();
+				$search = Search::instance();
 
 				// For each indexable specified, override the version
 				$indexables = $this->parse_indexables( $assoc_args );
@@ -510,7 +511,7 @@ class CoreCommand {
 	 * @subcommand get-last-indexed-post-id
 	 */
 	public function get_last_indexed_post_id( $args, $assoc_args ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
-		$search = \Automattic\VIP\Search\Search::instance();
+		$search = Search::instance();
 
 		$last_id = get_option( $search::LAST_INDEXED_POST_ID_OPTION );
 

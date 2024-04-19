@@ -2,7 +2,10 @@
 
 namespace Automattic\VIP\Search\Commands;
 
+use Automattic\VIP\Search\Health;
+use Automattic\VIP\Search\Search;
 use ElasticPress\Indexable;
+use ElasticPress\Indexables;
 use WP_CLI;
 use WP_CLI_Command;
 use WP_Error;
@@ -65,7 +68,7 @@ class VersionCommand extends WP_CLI_Command {
 	}
 
 	protected function add_helper( Indexable $indexable ) {
-		$search = \Automattic\VIP\Search\Search::instance();
+		$search = Search::instance();
 
 		$new_version = $search->versioning->add_version( $indexable );
 
@@ -98,7 +101,7 @@ class VersionCommand extends WP_CLI_Command {
 	public function get( $args, $assoc_args ) {
 		$type = $args[0];
 
-		$search = \Automattic\VIP\Search\Search::instance();
+		$search = Search::instance();
 
 		$indexable = \ElasticPress\Indexables::factory()->get( $type );
 
@@ -176,8 +179,8 @@ class VersionCommand extends WP_CLI_Command {
 	public function list( $args, $assoc_args ) {
 		$type = $args[0];
 
-		$search = \Automattic\VIP\Search\Search::instance();
-		$health = new \Automattic\VIP\Search\Health( $search );
+		$search = Search::instance();
+		$health = new Health( $search );
 
 		$indexable = \ElasticPress\Indexables::factory()->get( $type );
 
@@ -317,7 +320,7 @@ class VersionCommand extends WP_CLI_Command {
 	}
 
 	protected function activate_helper( Indexable $indexable, $version_number_to_activate ) {
-		$search = \Automattic\VIP\Search\Search::instance();
+		$search = Search::instance();
 
 		$new_version_number = $search->versioning->normalize_version_number( $indexable, $version_number_to_activate );
 
@@ -364,13 +367,13 @@ class VersionCommand extends WP_CLI_Command {
 			$assoc_args['yes'] = true;
 		}
 
-		$indexable = \ElasticPress\Indexables::factory()->get( $type );
+		$indexable = Indexables::factory()->get( $type );
 
 		if ( ! $indexable ) {
 			return WP_CLI::error( sprintf( 'Indexable %s not found. Is the feature active?', $type ) );
 		}
 
-		$search = \Automattic\VIP\Search\Search::instance();
+		$search = Search::instance();
 
 		if ( isset( $assoc_args['network-wide'] ) && is_multisite() ) {
 			WP_CLI::confirm( sprintf( 'Are you sure you want to deactivate index version %s for type %s on all sites in this network?', $desired_version_number, $type ), $assoc_args );
@@ -445,9 +448,9 @@ class VersionCommand extends WP_CLI_Command {
 	public function delete( $args, $assoc_args ) {
 		$type = $args[0];
 
-		$search = \Automattic\VIP\Search\Search::instance();
+		$search = Search::instance();
 
-		$indexable = \ElasticPress\Indexables::factory()->get( $type );
+		$indexable = Indexables::factory()->get( $type );
 
 		if ( ! $indexable ) {
 			return WP_CLI::error( sprintf( 'Indexable %s not found. Is the feature active?', $type ) );
@@ -512,7 +515,7 @@ class VersionCommand extends WP_CLI_Command {
 				return WP_CLI::error( sprintf( 'Index version %d is active for type %s and cannot be deleted', $version['number'], $type ) );
 			}
 
-			$result = $search->versioning->delete_version( $indexable, $args[1] );
+			$search->versioning->delete_version( $indexable, $args[1] );
 
 			WP_CLI::success( sprintf( 'Successfully deleted index version %d for type %s', $version['number'], $type ) );
 		}

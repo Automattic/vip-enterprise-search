@@ -2,6 +2,8 @@
 
 namespace Automattic\VIP\Search\Commands;
 
+use Automattic\VIP\Search\Search;
+use ElasticPress\Indexables;
 use WP_CLI;
 use WP_CLI_Command;
 
@@ -34,9 +36,9 @@ class DocumentCommand extends WP_CLI_Command {
 		$type      = $args[0];
 		$object_id = $args[1];
 
-		\Automattic\VIP\Search\Search::instance();
+		Search::instance();
 
-		$indexable = \ElasticPress\Indexables::factory()->get( $type );
+		$indexable = Indexables::factory()->get( $type );
 
 		if ( ! $indexable ) {
 			return WP_CLI::error( sprintf( 'Indexable %s not found. Is the feature active?', $type ) );

@@ -4,6 +4,7 @@ namespace Automattic\VIP\Search;
 
 use Automattic\VIP\Search\Health;
 use ElasticPress\Indexable;
+use ElasticPress\Indexables;
 use WP_Error;
 
 require_once __DIR__ . '/class-health.php';
@@ -49,7 +50,7 @@ class SettingsHealthJob {
 	 *
 	 * Useful for overriding (dependency injection) for tests
 	 *
-	 * @var \Automattic\VIP\Search\Search
+	 * @var Search
 	 */
 	public $search;
 
@@ -58,7 +59,7 @@ class SettingsHealthJob {
 	 *
 	 * Useful for overriding (dependency injection) for tests
 	 *
-	 * @var \ElasticPress\Indexables
+	 * @var Indexables
 	 */
 	public $indexables;
 
@@ -69,10 +70,10 @@ class SettingsHealthJob {
 	 */
 	public $health_check_disabled_sites = array();
 
-	public function __construct( \Automattic\VIP\Search\Search $search ) {
+	public function __construct( Search $search ) {
 		$this->search     = $search;
 		$this->health     = new Health( $search );
-		$this->indexables = \ElasticPress\Indexables::factory();
+		$this->indexables = Indexables::factory();
 	}
 
 	/**
