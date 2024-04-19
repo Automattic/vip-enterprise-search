@@ -5,8 +5,8 @@ namespace Automattic\VIP\Search\Commands;
 use WP_CLI;
 
 use Automattic\VIP\Search\Queue\Schema;
+use WP_CLI_Command;
 
-require_once __DIR__ . '/../../../../vip-helpers/vip-wp-cli.php';
 require_once __DIR__ . '/../class-health.php';
 
 /**
@@ -14,7 +14,7 @@ require_once __DIR__ . '/../class-health.php';
  *
  * @package Automattic\VIP\Search
  */
-class QueueCommand extends \WPCOM_VIP_CLI_Command {
+class QueueCommand extends WP_CLI_Command {
 	/**
 	 * Get info on the queue
 	 *

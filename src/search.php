@@ -23,6 +23,8 @@ if ( defined( 'VIP_ELASTICSEARCH_DISABLED' ) && true === constant( 'VIP_ELASTICS
 	return;
 }
 
+require_once __DIR__ . '/includes/classes/class-alerts.php';
+require_once __DIR__ . '/includes/classes/class-logger.php';
 require_once __DIR__ . '/includes/functions/utils.php';
 require_once __DIR__ . '/includes/classes/class-search.php';
 

@@ -239,27 +239,9 @@ class Search {
 		return static::$instance;
 	}
 
-	/**
-	 * Whether to load the latest ElasticPress version.
-	 * Can be overridden by defining `VIP_SEARCH_USE_NEXT_EP` to false.
-	 *
-	 * @return bool Whether to load the latest version or not. Defaults to true.
-	 */
-	public static function should_load_new_ep() {
-		if ( defined( 'VIP_SEARCH_USE_NEXT_EP' ) && true !== constant( 'VIP_SEARCH_USE_NEXT_EP' ) ) {
-			return false;
-		}
-
-		return true;
-	}
-
 	protected function load_dependencies() {
 		// Load ElasticPress
-		if ( static::should_load_new_ep() ) {
-			require_once __DIR__ . '/../../elasticpress-next/elasticpress.php';
-		} else {
-			require_once __DIR__ . '/../../elasticpress/elasticpress.php';
-		}
+		require_once __DIR__ . '/../../elasticpress/elasticpress.php';
 
 		// Load health check cron job
 		require_once __DIR__ . '/class-healthjob.php';
@@ -305,12 +287,12 @@ class Search {
 
 		// Alerts - can be set explicitly for mocking purposes
 		if ( ! $this->alerts ) {
-			$this->alerts = \Automattic\VIP\Utils\Alerts::instance();
+			$this->alerts = Alerts::instance();
 		}
 
 		// Logger - can be set explicitly for mocking purposes
 		if ( ! $this->logger ) {
-			$this->logger = new \Automattic\VIP\Logstash\Logger();
+			$this->logger = new Logger();
 		}
 
 		if ( ! $this->concurrency_limiter ) {
@@ -970,7 +952,7 @@ class Search {
 		 * Skip vip_safe_wp_remote_request for non-query (search) requests
 		 * Any timeouts happening in non-search/non-query context shouldn't count towards the request disabling threshold.
 		 */
-		if ( 'query' === $type ) {
+		if ( 'query' === $type && function_exists( 'vip_safe_wp_remote_request' ) ) {
 			$response = vip_safe_wp_remote_request( $query['url'], false, 5, $timeout, 10, $args );
 			self::query_count_incr();
 		} else {
@@ -1024,7 +1006,7 @@ class Search {
 				$sanitized_query = $this->sanitize_ep_query_for_logging( $query );
 				foreach ( $warning_messages as $message ) {
 					trigger_error( esc_html( $message ), \E_USER_WARNING );
-					\Automattic\VIP\Logstash\log2logstash( array(
+					Logger::log2logstash( array(
 						'severity' => 'warning',
 						'feature'  => 'search_es_warning',
 						'message'  => $message,
@@ -1079,7 +1061,7 @@ class Search {
 			$message  = 'Index deleted';
 		}
 
-		\Automattic\VIP\Logstash\log2logstash( array(
+		Logger::log2logstash( array(
 			'severity' => 'info',
 			'feature'  => $feature,
 			'message'  => $message,
@@ -1454,7 +1436,7 @@ class Search {
 
 		trigger_error( $message, \E_USER_WARNING ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 
-		\Automattic\VIP\Logstash\log2logstash(
+		Logger::log2logstash(
 			array(
 				'severity' => 'warning',
 				'feature'  => 'search_query_rate_limiting',
@@ -1707,7 +1689,7 @@ class Search {
 	public function filter__ep_user_mapping( $mapping ) {
 		$users_count = count_users();
 
-		if ( isset( $users_count->total_users ) && ( $users_count->total_users > self::USER_SHARD_THRESHOLD ) ) {
+		if ( isset( $users_count['total_users'] ) && ( $users_count['total_users'] > self::USER_SHARD_THRESHOLD ) ) {
 			$mapping['settings']['index.number_of_shards'] = 4;
 		}
 

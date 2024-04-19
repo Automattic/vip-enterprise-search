@@ -2,17 +2,17 @@
 
 namespace Automattic\VIP\Search\Commands;
 
-use WP_CLI;
 use ElasticPress\Indexable;
-
-require_once __DIR__ . '/../../../../vip-helpers/vip-wp-cli.php';
+use WP_CLI;
+use WP_CLI_Command;
+use WP_Error;
 
 /**
  * Commands to view and manage index versions
  *
  * @package Automattic\VIP\Search
  */
-class VersionCommand extends \WPCOM_VIP_CLI_Command {
+class VersionCommand extends WP_CLI_Command {
 	/**
 	 * Register a new index version
 	 *
@@ -123,6 +123,7 @@ class VersionCommand extends \WPCOM_VIP_CLI_Command {
 				restore_current_blog();
 
 				if ( is_wp_error( $version ) ) {
+					/** @var WP_Error $version */
 					return WP_CLI::error( sprintf( 'Index version "%s" for type %s is not valid on blog %d: %s', $args[1], $type, $site['blog_id'], $version->get_error_message() ) );
 				}
 
@@ -141,6 +142,7 @@ class VersionCommand extends \WPCOM_VIP_CLI_Command {
 			$version = $search->versioning->get_version( $indexable, $args[1] );
 
 			if ( is_wp_error( $version ) ) {
+				/** @var WP_Error $version */
 				return WP_CLI::error( sprintf( 'Index version "%s" for type %s is not valid: %s', $args[1], $type, $version->get_error_message() ) );
 			}
 
@@ -198,6 +200,7 @@ class VersionCommand extends \WPCOM_VIP_CLI_Command {
 				$site_versions = $search->versioning->get_versions( $indexable );
 
 				if ( is_wp_error( $site_versions ) ) {
+					/** @var WP_Error $site_versions */
 					restore_current_blog();
 					return WP_CLI::error( $site_versions->get_error_message() );
 				}
@@ -223,6 +226,7 @@ class VersionCommand extends \WPCOM_VIP_CLI_Command {
 			}
 
 			if ( is_wp_error( $versions ) ) {
+				/** @var WP_Error $versions */
 				return WP_CLI::error( $versions->get_error_message() );
 			}
 
@@ -464,6 +468,7 @@ class VersionCommand extends \WPCOM_VIP_CLI_Command {
 				$version = $search->versioning->get_version( $indexable, $args[1] );
 
 				if ( is_wp_error( $version ) ) {
+					/** @var WP_Error $version */
 					return WP_CLI::error( sprintf( 'Index version "%s" for type %s is not valid on blog %d: %s', $args[1], $type, $site['blog_id'], $version->get_error_message() ) );
 				}
 
@@ -495,6 +500,7 @@ class VersionCommand extends \WPCOM_VIP_CLI_Command {
 			$version = $search->versioning->get_version( $indexable, $args[1] );
 
 			if ( is_wp_error( $version ) ) {
+				/** @var WP_Error $version */
 				return WP_CLI::error( sprintf( 'Index version "%s" for type %s is not valid: %s', $args[1], $type, $version->get_error_message() ) );
 			}
 

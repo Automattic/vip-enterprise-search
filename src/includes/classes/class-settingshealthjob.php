@@ -3,7 +3,6 @@
 namespace Automattic\VIP\Search;
 
 use Automattic\VIP\Search\Health;
-use Automattic\VIP\Utils\Alerts;
 use ElasticPress\Indexable;
 use WP_Error;
 
@@ -124,7 +123,7 @@ class SettingsHealthJob {
 	 */
 	public function check_settings_health() {
 
-		\Automattic\VIP\Logstash\log2logstash(
+		Logger::log2logstash(
 			[
 				'severity' => 'info',
 				'feature'  => 'search_health_job',
@@ -451,7 +450,7 @@ class SettingsHealthJob {
 
 		update_option( self::LAST_PROCESSED_ID_OPTION, 'Indexing completed' );
 
-		\Automattic\VIP\Logstash\log2logstash(
+		Logger::log2logstash(
 			array(
 				'severity' => 'info',
 				'feature'  => 'search_versioning',

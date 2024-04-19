@@ -4,6 +4,7 @@ namespace Automattic\VIP\Search;
 
 require_once __DIR__ . '/class-settingshealthjob.php';
 
+use ElasticPress\Elasticsearch;
 use ElasticPress\Indexable;
 use ElasticPress\Indexables;
 
@@ -25,17 +26,23 @@ class Versioning {
 
 	/**
 	 * Injectable instance of \ElasticPress\Elasticsearch
+	 *
+	 * @var Elasticsearch
 	 */
 	public $elastic_search_instance;
 
 
 	/**
 	 * Injectable instance of \ElasticPress\Indexables
+	 *
+	 * @var Indexables
 	 */
 	public $elastic_search_indexables;
 
 	/**
-	 * Injectable instance of \Automattic\VIP\Utils\Alerts
+	 * Injectable instance of Alerts
+	 *
+	 * @var Alerts
 	 */
 	public $alerts;
 
@@ -67,17 +74,17 @@ class Versioning {
 
 		add_action( 'init', [ $this, 'action__elasticpress_loaded' ], PHP_INT_MAX );
 
-		add_action( \Automattic\VIP\Search\SettingsHealthJob::CRON_EVENT_NAME, [ $this, 'maybe_self_heal' ] );
+		add_action( SettingsHealthJob::CRON_EVENT_NAME, [ $this, 'maybe_self_heal' ] );
 
-		$this->elastic_search_instance   = \ElasticPress\Elasticsearch::factory();
-		$this->elastic_search_indexables = \ElasticPress\Indexables::factory();
-		$this->alerts                    = \Automattic\VIP\Utils\Alerts::instance();
+		$this->elastic_search_instance   = Elasticsearch::factory();
+		$this->elastic_search_indexables = Indexables::factory();
+		$this->alerts                    = Alerts::instance();
 	}
 
 	public function action__elasticpress_loaded() {
 		// Hook into the delete action of all known indexables, to replicate those deletes out to all inactive index versions
 		// NOTE - runs on init as features including some indexables are registered after plugin loaded also on init hook
-		$all_indexables = \ElasticPress\Indexables::factory()->get_all();
+		$all_indexables = Indexables::factory()->get_all();
 
 		foreach ( $all_indexables as $indexable ) {
 			add_action( 'ep_delete_' . $indexable->slug, [ $this, 'action__ep_delete_indexable' ], 10, 2 );
@@ -974,7 +981,7 @@ class Versioning {
 			} else {
 				$this->update_versions( $indexable, $versions );
 
-				\Automattic\VIP\Logstash\log2logstash(
+				Logger::log2logstash(
 					array(
 						'severity' => 'info',
 						'feature'  => 'search_versioning',
@@ -991,7 +998,7 @@ class Versioning {
 	}
 
 	public function alert_for_index_self_healing( string $slug ) {
-		if ( ! isset( $this->alert ) ) {
+		if ( ! isset( $this->alerts ) ) {
 			return;
 		}
 
@@ -1006,7 +1013,7 @@ class Versioning {
 	}
 
 	public function alert_for_index_self_healing_failed( string $slug ) {
-		if ( ! isset( $this->alert ) ) {
+		if ( ! isset( $this->alerts ) ) {
 			return;
 		}
 
