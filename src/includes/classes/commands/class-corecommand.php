@@ -2,6 +2,7 @@
 
 namespace Automattic\VIP\Search\Commands;
 
+use Automattic\VIP\Search\Logger;
 use WP_CLI;
 use WP_CLI\Utils;
 use ElasticPress\Elasticsearch;
@@ -298,7 +299,7 @@ class CoreCommand {
 			if ( isset( $assoc_args['setup'] ) && $assoc_args['setup'] ) {
 				self::confirm_destructive_operation( $assoc_args );
 			}
-			
+
 			// Unset our arguments since they don't exist in ElasticPress and causes
 			// an error for indexing operations exclusively for some reason.
 			unset( $assoc_args['version'] );
@@ -308,7 +309,7 @@ class CoreCommand {
 				$assoc_args['yes'] = true;
 			}
 
-			\Automattic\VIP\Logstash\log2logstash(
+			Logger::log2logstash(
 				[
 					'severity' => 'info',
 					'feature'  => 'search_cli',
@@ -388,7 +389,7 @@ class CoreCommand {
 	 * Throw error when delete-index command is attempted to be used.
 	 *
 	 * @subcommand delete-index
-	 * 
+	 *
 	 * @param array $args Positional CLI args.
 	 * @param array $assoc_args Associative CLI args.
 	 */
@@ -542,7 +543,7 @@ class CoreCommand {
 	 * Stop the current indexing operation.
 	 *
 	 * @subcommand stop-indexing
-	 * 
+	 *
 	 * @param array $args Positional CLI args.
 	 * @param array $assoc_args Associative CLI args.
 	 */
@@ -646,7 +647,7 @@ class CoreCommand {
 
 	/**
 	 * Get stats on the current index.
-	 * 
+	 *
 	 * @subcommand stats
 	 */
 	public function get_stats( $args, $assoc_args ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed

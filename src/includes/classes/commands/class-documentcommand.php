@@ -3,15 +3,14 @@
 namespace Automattic\VIP\Search\Commands;
 
 use WP_CLI;
-
-require_once __DIR__ . '/../../../../vip-helpers/vip-wp-cli.php';
+use WP_CLI_Command;
 
 /**
  * Commands to view and manage individual documents
  *
  * @package Automattic\VIP\Search
  */
-class DocumentCommand extends \WPCOM_VIP_CLI_Command {
+class DocumentCommand extends WP_CLI_Command {
 	/**
 	 * Get details about a document by type and an id
 	 *

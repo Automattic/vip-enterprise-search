@@ -564,7 +564,9 @@ class Health {
 			}
 
 			// Cleanup WordPress object cache to keep memory usage under control
-			vip_reset_local_object_cache();
+			if ( function_exists( 'vip_reset_local_object_cache' ) ) {
+				vip_reset_local_object_cache();
+			}
 
 			if ( $is_cli && ! $silent ) {
 				printf( "...%s %s\n", empty( $result ) ? '✓' : '✘', $do_not_heal || empty( $result ) ? '' : '(attempted to reconcile)' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -1034,13 +1036,9 @@ class Health {
 		$diff = [];
 
 		if ( $indexable->index_exists() ) {
-			if ( method_exists( '\Automattic\VIP\Search\Search', 'should_load_new_ep' ) && \Automattic\VIP\Search\Search::should_load_new_ep() ) {
-				$index_name      = $indexable->get_index_name();
-				$settings        = $this->elasticsearch->get_index_settings( $index_name );
-				$actual_settings = $settings[ $index_name ]['settings'] ?? [];
-			} else {
-				$actual_settings = $indexable->get_index_settings();
-			}
+			$index_name      = $indexable->get_index_name();
+			$settings        = $this->elasticsearch->get_index_settings( $index_name );
+			$actual_settings = $settings[ $index_name ]['settings'] ?? [];
 
 			if ( is_wp_error( $actual_settings ) ) {
 				$this->search->versioning->reset_current_version_number( $indexable );
@@ -1048,12 +1046,8 @@ class Health {
 				return $actual_settings;
 			}
 
-			if ( method_exists( '\Automattic\VIP\Search\Search', 'should_load_new_ep' ) && \Automattic\VIP\Search\Search::should_load_new_ep() ) {
-				$mapping          = $indexable->generate_mapping();
-				$desired_settings = $mapping['settings'];
-			} else {
-				$desired_settings = $indexable->build_settings();
-			}
+			$mapping          = $indexable->generate_mapping();
+			$desired_settings = $mapping['settings'];
 
 			// We only monitor certain settings
 			$actual_settings_to_check  = self::limit_index_settings_to_keys( $actual_settings, self::INDEX_SETTINGS_HEALTH_MONITORED_KEYS );
@@ -1118,14 +1112,10 @@ class Health {
 			}
 		}
 
-		if ( method_exists( '\Automattic\VIP\Search\Search', 'should_load_new_ep' ) && \Automattic\VIP\Search\Search::should_load_new_ep() ) {
-			$mapping          = $indexable->generate_mapping();
-			$desired_settings = $mapping['settings'];
-		} else {
-			$desired_settings = $indexable->build_settings();
-		}
+		$mapping          = $indexable->generate_mapping();
+		$desired_settings = $mapping['settings'];
 
-		\Automattic\VIP\Logstash\log2logstash(
+		Logger::log2logstash(
 			[
 				'severity' => 'info',
 				'feature'  => 'search_health',
@@ -1141,11 +1131,7 @@ class Health {
 		// Limit to only the settings that we auto-heal
 		$desired_settings_to_heal = self::limit_index_settings_to_keys( $desired_settings, self::INDEX_SETTINGS_HEALTH_AUTO_HEAL_KEYS );
 		$index_name               = $indexable->get_index_name();
-		if ( method_exists( '\Automattic\VIP\Search\Search', 'should_load_new_ep' ) && \Automattic\VIP\Search\Search::should_load_new_ep() ) {
-			$result = $this->elasticsearch->update_index_settings( $index_name, $desired_settings_to_heal, false );
-		} else {
-			$result = $indexable->update_index_settings( $desired_settings_to_heal );
-		}
+		$result = $this->elasticsearch->update_index_settings( $index_name, $desired_settings_to_heal, false );
 
 		$index_version = $this->search->versioning->get_current_version_number( $indexable );
 

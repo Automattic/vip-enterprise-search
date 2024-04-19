@@ -3,9 +3,9 @@
 namespace Automattic\VIP\Search\Commands;
 
 use WP_CLI;
+use WP_CLI_Command;
 use WP_Error;
 
-require_once __DIR__ . '/../../../../vip-helpers/vip-wp-cli.php';
 require_once __DIR__ . '/../class-health.php';
 
 /**
@@ -13,7 +13,7 @@ require_once __DIR__ . '/../class-health.php';
  *
  * @package Automattic\VIP\Search
  */
-class HealthCommand extends \WPCOM_VIP_CLI_Command {
+class HealthCommand extends WP_CLI_Command {
 	private const SUCCESS_ICON = "\u{2705}"; // unicode check mark
 	private const FAILURE_ICON = "\u{274C}"; // unicode cross mark
 	private const INFO_ICON    = "\u{1F7E7}"; // unicode info mark
@@ -420,6 +420,7 @@ class HealthCommand extends \WPCOM_VIP_CLI_Command {
 		$results = $health->validate_index_posts_content( $assoc_args );
 
 		if ( is_wp_error( $results ) ) {
+			/** @var WP_Error $results */
 			if ( $results->get_error_code() === 'es_validate_content_aborted' ) {
 				WP_CLI::error( $results->get_error_message() );
 			}

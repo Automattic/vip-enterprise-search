@@ -16,7 +16,7 @@ class Queue {
 	public $schema;
 	/** @var Indexables */
 	public $indexables;
-	/** @var \Automattic\VIP\Logstash\Logger */
+	/** @var Logger */
 	public $logger;
 	/** @var Queue\Cron */
 	public $cron;
@@ -73,7 +73,7 @@ class Queue {
 
 		// Logger - can be set explicitly for mocking purposes
 		if ( ! $this->logger ) {
-			$this->logger = new \Automattic\VIP\Logstash\Logger();
+			$this->logger = new Logger();
 		}
 
 		$this->setup_hooks();
@@ -921,7 +921,7 @@ class Queue {
 				// Increment first to prevent overrunning ratelimiting
 				self::index_count_incr( count( $ids ) );
 
-				\Automattic\VIP\Logstash\log2logstash(
+				Logger::log2logstash(
 					[
 						'severity' => 'info',
 						'feature'  => 'search_queue',
@@ -1139,11 +1139,11 @@ class Queue {
 			$index_limiting_time
 		);
 
-		\Automattic\VIP\Utils\Alerts::instance()->send_to_chat( self::INDEX_RATE_LIMITING_ALERT_SLACK_CHAT, $message, self::INDEX_RATE_LIMITING_ALERT_LEVEL );
+		Alerts::chat( self::INDEX_RATE_LIMITING_ALERT_SLACK_CHAT, $message, self::INDEX_RATE_LIMITING_ALERT_LEVEL );
 
 		trigger_error( $message, \E_USER_WARNING ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 
-		\Automattic\VIP\Logstash\log2logstash(
+		Logger::log2logstash(
 			array(
 				'severity' => 'warning',
 				'feature'  => 'search_indexing_rate_limiting',

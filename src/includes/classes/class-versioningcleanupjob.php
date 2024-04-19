@@ -133,9 +133,9 @@ class VersioningCleanupJob {
 				$indexable->slug,
 				$delete_version->get_error_message()
 			);
-			\Automattic\VIP\Utils\Alerts::chat( self::SEARCH_ALERT_SLACK_CHAT, $message );
+			Alerts::chat( self::SEARCH_ALERT_SLACK_CHAT, $message );
 		} else {
-			\Automattic\VIP\Logstash\log2logstash(
+			Logger::log2logstash(
 				array(
 					'severity' => 'info',
 					'feature'  => 'search_versioning',

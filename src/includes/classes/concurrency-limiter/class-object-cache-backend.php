@@ -2,6 +2,8 @@
 
 namespace Automattic\VIP\Search\ConcurrencyLimiter;
 
+use Automattic\VIP\Search\Logger;
+
 use function Automattic\VIP\Logstash\log2logstash;
 
 require_once __DIR__ . '/backendinterface.php';
@@ -50,7 +52,7 @@ class Object_Cache_Backend implements BackendInterface {
 				++$this->increments;
 
 				if ( $value > $this->limit ) {
-					log2logstash( [
+					Logger::log2logstash( [
 						'severity' => 'warning',
 						'feature'  => 'search_concurrency_limiter',
 						'message'  => 'Reached concurrency limit',
@@ -65,7 +67,7 @@ class Object_Cache_Backend implements BackendInterface {
 			}
 		}
 
-		log2logstash( [
+		Logger::log2logstash( [
 			'severity' => 'warning',
 			'feature'  => 'search_concurrency_limiter',
 			'message'  => 'Failed to increment the counter',
@@ -87,7 +89,7 @@ class Object_Cache_Backend implements BackendInterface {
 					$this->reset();
 				}
 			} else {
-				log2logstash( [
+				Logger::log2logstash( [
 					'severity' => 'warning',
 					'feature'  => 'search_concurrency_limiter',
 					'message'  => 'Failed to decrement the counter',

@@ -1,6 +1,6 @@
 <?php
 
-use Automattic\VIP\Utils\Alerts;
+use Automattic\VIP\Search\Logger;
 
 /**
  * Wrapper for getting related posts. The feature Related_posts must be active.
@@ -32,7 +32,7 @@ function vip_maybe_backfill_ep_option( $value, $option ) {
 			$home_url = home_url();
 
 			$message = $option_added ? "Successfully added {$option} option to subsite." : "Attempted to add {$option} option to subsite.";
-			\Automattic\VIP\Logstash\log2logstash(
+			Logger::log2logstash(
 				array(
 					'severity' => 'info',
 					'feature'  => 'search_ep_option',
