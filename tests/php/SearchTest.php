@@ -359,12 +359,8 @@ class SearchTest extends WP_UnitTestCase {
 
 		add_filter( 'wp_count_posts', $return_big_count );
 
-		if ( method_exists( $indexable, 'build_settings' ) ) {
-			$settings = $indexable->build_settings();
-		} else {
-			$mapping  = $indexable->generate_mapping();
-			$settings = $mapping['settings'];
-		}
+		$mapping  = $indexable->generate_mapping();
+		$settings = $mapping['settings'];
 
 		$this->assertEquals( 4, $settings['index.number_of_shards'] );
 
@@ -389,12 +385,8 @@ class SearchTest extends WP_UnitTestCase {
 		add_filter( 'pre_count_users', $return_big_count );
 
 		$indexable = Indexables::factory()->get( 'user' );
-		if ( method_exists( $indexable, 'build_settings' ) ) {
-			$settings = $indexable->build_settings();
-		} else {
-			$mapping  = $indexable->generate_mapping();
-			$settings = $mapping['settings'];
-		}
+		$mapping  = $indexable->generate_mapping();
+		$settings = $mapping['settings'];
 		$this->assertEquals( 4, $settings['index.number_of_shards'] );
 	}
 
@@ -1421,12 +1413,8 @@ class SearchTest extends WP_UnitTestCase {
 		$this->assertNotEmpty( $indexables, 'Indexables array was empty' );
 
 		foreach ( $indexables as $indexable ) {
-			if ( method_exists( $indexable, 'build_settings' ) ) {
-				$settings = $indexable->build_settings();
-			} else {
-				$mapping  = $indexable->generate_mapping();
-				$settings = $mapping['settings'];
-			}
+			$mapping  = $indexable->generate_mapping();
+			$settings = $mapping['settings'];
 
 			$this->assertEquals( 'dfw', $settings['index.routing.allocation.include.dc'], 'Indexable ' . $indexable->slug . ' has the wrong routing allocation' );
 		}
@@ -1443,12 +1431,8 @@ class SearchTest extends WP_UnitTestCase {
 		$this->assertNotEmpty( $indexables, 'Indexables array was empty' );
 
 		foreach ( $indexables as $indexable ) {
-			if ( method_exists( $indexable, 'build_settings' ) ) {
-				$settings = $indexable->build_settings();
-			} else {
-				$mapping  = $indexable->generate_mapping();
-				$settings = $mapping['settings'];
-			}
+			$mapping  = $indexable->generate_mapping();
+			$settings = $mapping['settings'];
 
 			// Datacenter was invalid, so it should not have added the allocation settings
 			$this->assertArrayNotHasKey( 'index.routing.allocation.include.dc', $settings, 'Indexable ' . $indexable->slug . ' incorrectly defined the allocation settings' );
