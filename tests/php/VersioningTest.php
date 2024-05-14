@@ -50,8 +50,7 @@ class Versioning_Test extends WP_UnitTestCase {
 		self::$search->init();
 		self::$search->queue->schema->prepare_table();
 
-		// Required so that EP registers the Indexables
-		do_action( 'plugins_loaded' );
+		\ElasticPress\register_indexable_posts();
 
 		self::$version_instance = self::$search->versioning;
 

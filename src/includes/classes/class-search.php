@@ -227,6 +227,7 @@ class Search {
 		$endpoints_defined = defined( 'VIP_ELASTICSEARCH_ENDPOINTS' ) && is_array( constant( 'VIP_ELASTICSEARCH_ENDPOINTS' ) ) && ! empty( constant( 'VIP_ELASTICSEARCH_ENDPOINTS' ) );
 		$username_defined  = defined( 'VIP_ELASTICSEARCH_USERNAME' ) && constant( 'VIP_ELASTICSEARCH_USERNAME' );
 		$password_defined  = defined( 'VIP_ELASTICSEARCH_PASSWORD' ) && constant( 'VIP_ELASTICSEARCH_PASSWORD' );
+
 		return $endpoints_defined && $username_defined && $password_defined;
 	}
 

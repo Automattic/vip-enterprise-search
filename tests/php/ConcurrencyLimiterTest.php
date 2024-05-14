@@ -12,6 +12,9 @@ class ConcurrencyLimiterTest extends WP_UnitTestCase {
 	public function setUp(): void {
 		parent::setUp();
 
+		$search = new Search();
+		$search->init();
+
 		remove_all_filters( 'ep_do_intercept_request' );
 		remove_all_actions( 'ep_remote_request' );
 

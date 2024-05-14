@@ -2,6 +2,7 @@
 
 // phpcs:disable Universal.Namespaces.DisallowCurlyBraceSyntax.Forbidden
 // phpcs:disable Universal.Namespaces.OneDeclarationPerFile.MultipleFound
+// phpcs:disable Universal.Files.SeparateFunctionsFromOO.Mixed
 
 namespace Automattic\Test {
 
@@ -53,90 +54,6 @@ namespace Automattic\Test {
 	}
 }
 
-namespace Automattic\VIP\Security {
-	use Automattic\Test\Constant_Mocker;
-
-	function defined( $constant ) {
-		return Constant_Mocker::defined( $constant );
-	}
-
-	function constant( $constant ) {
-		return Constant_Mocker::constant( $constant );
-	}
-}
-
-namespace Automattic\VIP\Support_User {
-	use Automattic\Test\Constant_Mocker;
-
-	function defined( $constant ) {
-		return Constant_Mocker::defined( $constant );
-	}
-
-	function constant( $constant ) {
-		return Constant_Mocker::constant( $constant );
-	}
-}
-
-namespace Automattic\VIP\Utils {
-	use Automattic\Test\Constant_Mocker;
-
-	function defined( $constant ) {
-		return Constant_Mocker::defined( $constant );
-	}
-
-	function constant( $constant ) {
-		return Constant_Mocker::constant( $constant );
-	}
-}
-
-namespace Automattic\VIP {
-	use Automattic\Test\Constant_Mocker;
-
-	function defined( $constant ) {
-		return Constant_Mocker::defined( $constant );
-	}
-
-	function constant( $constant ) {
-		return Constant_Mocker::constant( $constant );
-	}
-}
-
-namespace Automattic\VIP\Files\Acl {
-	use Automattic\Test\Constant_Mocker;
-
-	function defined( $constant ) {
-		return Constant_Mocker::defined( $constant );
-	}
-
-	function constant( $constant ) {
-		return Constant_Mocker::constant( $constant );
-	}
-}
-
-namespace Automattic\VIP\Cache {
-	use Automattic\Test\Constant_Mocker;
-
-	function defined( $constant ) {
-		return Constant_Mocker::defined( $constant );
-	}
-
-	function constant( $constant ) {
-		return Constant_Mocker::constant( $constant );
-	}
-}
-
-namespace Automattic\VIP\Feature {
-	use Automattic\Test\Constant_Mocker;
-
-	function defined( $constant ) {
-		return Constant_Mocker::defined( $constant );
-	}
-
-	function constant( $constant ) {
-		return Constant_Mocker::constant( $constant );
-	}
-}
-
 namespace Automattic\VIP\Search {
 	use Automattic\Test\Constant_Mocker;
 
@@ -166,69 +83,5 @@ namespace Automattic\VIP\Search\Queue {
 
 	function define( $constant, $value ) {
 		Constant_Mocker::define( $constant, $value );
-	}
-}
-
-namespace Automattic\VIP\Helpers\WP_CLI_DB {
-	use Automattic\Test\Constant_Mocker;
-
-	function define( $constant, $value ) {
-		Constant_Mocker::define( $constant, $value );
-	}
-
-	function defined( $constant ) {
-		return Constant_Mocker::defined( $constant );
-	}
-
-	function constant( $constant ) {
-		return Constant_Mocker::constant( $constant );
-	}
-}
-
-namespace Automattic\VIP\Files {
-	use Automattic\Test\Constant_Mocker;
-
-	function define( $constant, $value ) {
-		Constant_Mocker::define( $constant, $value );
-	}
-
-	function defined( $constant ) {
-		return Constant_Mocker::defined( $constant );
-	}
-
-	function constant( $constant ) {
-		return Constant_Mocker::constant( $constant );
-	}
-}
-
-namespace Automattic\VIP\Core\Constants {
-	use Automattic\Test\Constant_Mocker;
-
-	function define( $constant, $value ) {
-		return Constant_Mocker::define( $constant, $value );
-	}
-
-	function defined( $constant ) {
-		return Constant_Mocker::defined( $constant );
-	}
-
-	function constant( $constant ) {
-		return Constant_Mocker::constant( $constant );
-	}
-}
-
-namespace Automattic\VIP\Mail {
-	use Automattic\Test\Constant_Mocker;
-
-	function define( $constant, $value ) {
-		return Constant_Mocker::define( $constant, $value );
-	}
-
-	function defined( $constant ) {
-		return Constant_Mocker::defined( $constant );
-	}
-
-	function constant( $constant ) {
-		return Constant_Mocker::constant( $constant );
 	}
 }

@@ -22,8 +22,7 @@ class HealthJobTest extends WP_UnitTestCase {
 
 		$this->search = new Search();
 		$this->search->init();
-		// Required so that EP registers the Indexables
-		do_action( 'plugins_loaded' );
+		\ElasticPress\register_indexable_posts();
 
 		// Users indexable doesn't get registered by default, but we have tests that queue user objects
 		Indexables::factory()->register( new User() );

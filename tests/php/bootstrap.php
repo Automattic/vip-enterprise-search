@@ -1,6 +1,8 @@
 <?php
 
 require_once __DIR__ . '/../../vendor/autoload.php';
+require_once __DIR__ . '/internal/mock-header.php';
+require_once __DIR__ . '/internal/class-constants-mocker.php';
 
 $_tests_dir = getenv( 'WP_TESTS_DIR' );
 if ( ! $_tests_dir ) {
@@ -20,7 +22,6 @@ define( 'WPCOM_VIP_MAIL_TRACKING_KEY', 'key' );
 define( 'WPCOM_VIP_DISABLE_REMOTE_REQUEST_ERROR_REPORTING', true );
 
 function _manually_load_plugin() {
-	require_once __DIR__ . '/../../src/elasticpress/elasticpress.php';
 	require_once __DIR__ . '/../../src/search.php';
 }
 

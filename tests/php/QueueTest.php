@@ -32,8 +32,7 @@ class QueueTest extends WP_UnitTestCase {
 		$this->es = new Search();
 		$this->es->init();
 
-		// Required so that EP registers the Indexables
-		do_action( 'plugins_loaded' );
+		\ElasticPress\register_indexable_posts();
 		// Users indexable doesn't get registered by default, but we have tests that queue user objects
 		Indexables::factory()->register( new User() );
 

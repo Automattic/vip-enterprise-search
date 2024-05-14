@@ -40,8 +40,7 @@ class SettingsHealthJobTest extends WP_UnitTestCase {
 		$blocks   = $registry->get_all_registered();
 		array_walk( $blocks, fn ( $block ) => $registry->unregister( $block->name ) );
 
-		// Required so that EP registers the Indexables
-		do_action( 'plugins_loaded' );
+		\ElasticPress\register_indexable_posts();
 	}
 
 	public function test__process_indexables_settings_health_results__reports_error() {
