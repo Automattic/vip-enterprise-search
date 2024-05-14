@@ -24,6 +24,7 @@ class SearchTest extends WP_UnitTestCase {
 
 	public function setUp(): void {
 		parent::setUp();
+		Constant_Mocker::clear();
 
 		$this->search_instance = new Search();
 
