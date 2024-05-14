@@ -2363,49 +2363,53 @@ class SearchTest extends WP_UnitTestCase {
 		$this->assertEquals( $expected, $result );
 	}
 
-	public function test__are_es_constants_defined__no_constants() {
-		$result = Search::are_es_constants_defined();
-
-		$this->assertFalse( $result );
+	public function data_are_es_constants_defined(): iterable {
+		return [
+			'no constants'   => [ [], false ],
+			'all constants'  => [
+				[
+					'VIP_ELASTICSEARCH_ENDPOINTS' => [ 'endpoint' ],
+					'VIP_ELASTICSEARCH_USERNAME'  => 'foo',
+					'VIP_ELASTICSEARCH_PASSWORD'  => 'bar',
+				],
+				true,
+			],
+			'empty password' => [
+				[
+					'VIP_ELASTICSEARCH_ENDPOINTS' => [ 'endpoint' ],
+					'VIP_ELASTICSEARCH_USERNAME'  => 'foo',
+					'VIP_ELASTICSEARCH_PASSWORD'  => '',
+				],
+				false,
+			],
+			'no username'    => [
+				[
+					'VIP_ELASTICSEARCH_ENDPOINTS' => [ 'endpoint' ],
+					'VIP_ELASTICSEARCH_USERNAME'  => '',
+					'VIP_ELASTICSEARCH_PASSWORD'  => 'bar',
+				],
+				false,
+			],
+			'no endpoints'   => [
+				[
+					'VIP_ELASTICSEARCH_ENDPOINTS' => [],
+					'VIP_ELASTICSEARCH_USERNAME'  => 'foo',
+					'VIP_ELASTICSEARCH_PASSWORD'  => 'bar',
+				],
+				false,
+			],
+		];
 	}
 
-	public function test__are_es_constants_defined__all_constants() {
-		Constant_Mocker::define( 'VIP_ELASTICSEARCH_ENDPOINTS', [ 'endpoint' ] );
-		Constant_Mocker::define( 'VIP_ELASTICSEARCH_USERNAME', 'foo' );
-		Constant_Mocker::define( 'VIP_ELASTICSEARCH_PASSWORD', 'bar' );
+	/**
+	 * @dataProvider data_are_es_constants_defined
+	 */
+	public function test_are_es_constants_defined( $constants, $expected ) {
+		foreach ( $constants as $constant => $value ) {
+			Constant_Mocker::define( $constant, $value );
+		}
 
-		$result = Search::are_es_constants_defined();
-
-		$this->assertTrue( $result );
-	}
-
-	public function test__are_es_constants_defined__empty_password() {
-		Constant_Mocker::define( 'VIP_ELASTICSEARCH_ENDPOINTS', [ 'endpoint' ] );
-		Constant_Mocker::define( 'VIP_ELASTICSEARCH_USERNAME', 'foo' );
-		Constant_Mocker::define( 'VIP_ELASTICSEARCH_PASSWORD', '' );
-
-		$result = Search::are_es_constants_defined();
-
-		$this->assertFalse( $result );
-	}
-
-	public function test__are_es_constants_defined__no_username() {
-		Constant_Mocker::define( 'VIP_ELASTICSEARCH_ENDPOINTS', [ 'endpoint' ] );
-		Constant_Mocker::define( 'VIP_ELASTICSEARCH_PASSWORD', 'bar' );
-
-		$result = Search::are_es_constants_defined();
-
-		$this->assertFalse( $result );
-	}
-
-	public function test__are_es_constants_defined__no_endpoints() {
-		Constant_Mocker::define( 'VIP_ELASTICSEARCH_ENDPOINTS', [] );
-		Constant_Mocker::define( 'VIP_ELASTICSEARCH_USERNAME', 'foo' );
-		Constant_Mocker::define( 'VIP_ELASTICSEARCH_PASSWORD', 'bar' );
-
-		$result = Search::are_es_constants_defined();
-
-		$this->assertFalse( $result );
+		$this->assertSame( $expected, $this->search_instance->are_es_constants_defined() );
 	}
 
 	public function test__filter_ep_enable_do_weighting__default_no_weighting() {
@@ -2417,12 +2421,7 @@ class SearchTest extends WP_UnitTestCase {
 	public function test__filter_ep_enable_do_weighting__anonymous_function() {
 		$this->search_instance->init();
 
-		add_filter(
-			'ep_weighting_configuration_for_search',
-			function ( $weight_config ) {
-				return $weight_config;
-			}
-		);
+		add_filter( 'ep_weighting_configuration_for_search', fn ( $weight_config ) => $weight_config );
 
 		$this->assertTrue( apply_filters( 'ep_enable_do_weighting', true, [], [], [] ) );
 	}
@@ -2442,10 +2441,7 @@ class SearchTest extends WP_UnitTestCase {
 	}
 
 	public function test__filter_ep_enable_do_weighting__no_custom_search_results() {
-		// Ensure ElasticPress is ready
-		do_action( 'plugins_loaded' );
-
-		$this->search_instance->init();
+		$this->init_es( false );
 
 		Features::factory()->activate_feature( 'searchordering' );
 		update_option( 'vip_custom_results_existence', '0' );
@@ -2454,10 +2450,7 @@ class SearchTest extends WP_UnitTestCase {
 	}
 
 	public function test__filter_ep_enable_do_weighting__custom_search_results() {
-		// Ensure ElasticPress is ready
-		do_action( 'plugins_loaded' );
-
-		$this->search_instance->init();
+		$this->init_es( false );
 
 		Features::factory()->activate_feature( 'searchordering' );
 		update_option( 'vip_custom_results_existence', '1' );
@@ -2466,10 +2459,7 @@ class SearchTest extends WP_UnitTestCase {
 	}
 
 	public function test__set_custom_results_existence_cache() {
-		// Ensure ElasticPress is ready
-		do_action( 'plugins_loaded' );
-
-		$this->search_instance->init();
+		$this->init_es( false );
 
 		Features::factory()->activate_feature( 'searchordering' );
 
@@ -2528,8 +2518,10 @@ class SearchTest extends WP_UnitTestCase {
 	 * @return void
 	 */
 	private function init_es( $run_init = true ) {
-		Constant_Mocker::undefine( 'EP_DASHBOARD_SYNC' );
 		Constant_Mocker::define( 'EP_DASHBOARD_SYNC', false );
+		if ( ! Constant_Mocker::defined( 'VIP_GO_ENV' ) ) {
+			Constant_Mocker::define( 'VIP_GO_ENV', 'test' );
+		}
 
 		if ( $run_init ) {
 			remove_all_actions( 'init' );
