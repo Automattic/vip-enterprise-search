@@ -955,10 +955,13 @@ class Search {
 		 */
 		if ( 'query' === $type && function_exists( 'vip_safe_wp_remote_request' ) ) {
 			$response = vip_safe_wp_remote_request( $query['url'], false, 5, $timeout, 10, $args );
-			self::query_count_incr();
 		} else {
 			$args['timeout'] = $timeout;
 			$response        = wp_remote_request( $query['url'], $args );
+		}
+
+		if ( 'query' === $type ) {
+			static::query_count_incr();
 		}
 
 		$end_time = microtime( true );
