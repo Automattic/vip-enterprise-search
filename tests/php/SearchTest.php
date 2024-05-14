@@ -2501,18 +2501,6 @@ class SearchTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Helper function for accessing protected properties.
-	 */
-	protected static function get_property( $name ) {
-		$class = new \ReflectionClass( __NAMESPACE__ . '\Search' );
-
-		$property = $class->getProperty( $name );
-		$property->setAccessible( true ); // NOSONAR
-
-		return $property;
-	}
-
-	/**
 	 * Helper function to set required constant, initialize the search instance, and do required action for setting up EP indexables.
 	 *
 	 * @return void
