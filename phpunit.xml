@@ -26,7 +26,4 @@
 			<directory>src/es-wp-query</directory>
 		</exclude>
 	</coverage>
-	<listeners>
-		<listener class="VIP_Test_Listener"/>
-	</listeners>
 </phpunit>
