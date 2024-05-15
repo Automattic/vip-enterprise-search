@@ -27,6 +27,15 @@ function _manually_load_plugin() {
 
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 
+// Disable calls to wordpress.org to get translations
+tests_add_filter( 'translations_api', function ( $res ) {
+	if ( false === $res ) {
+		$res = [ 'translations' => [] ];
+	}
+	
+	return $res;
+} );
+
 require_once $_tests_dir . '/includes/bootstrap.php';
 
 if ( isset( $GLOBALS['wp_version'] ) ) {

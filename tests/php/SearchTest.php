@@ -1881,7 +1881,7 @@ class SearchTest extends WP_UnitTestCase {
 		$partially_mocked_search->alerts     = $alerts_mocked;
 
 		$indexables_mock->method( 'get' )
-			->willReturn( $this->createMock( \ElasticPress\Indexable::class ) );
+			->willReturn( $this->createMock( Indexable::class ) );
 
 		$partially_mocked_search->method( 'get_current_field_count' )->willReturn( $field_count );
 
