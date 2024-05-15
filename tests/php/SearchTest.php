@@ -11,6 +11,7 @@ use ElasticPress\Elasticsearch;
 use ElasticPress\Features;
 use ElasticPress\Indexable;
 use ElasticPress\Indexables;
+use ElasticPress\Installer;
 use stdClass;
 use WP_Error;
 use WP_Post;
@@ -2236,9 +2237,12 @@ class SearchTest extends WP_UnitTestCase {
 	}
 
 	public function test__ep_indexable_post_types_should_append_attachment_to_array() {
-		require_once __DIR__ . '/../../src/elasticpress/elasticpress.php';
-		// Ensure ElasticPress is ready
-		do_action( 'plugins_loaded' );
+		// We need to have EP loaded before we start testing
+		if ( ! class_exists( Installer::class, false ) ) {
+			require_once __DIR__ . '/../../src/elasticpress/elasticpress.php';
+		}
+
+		\ElasticPress\register_indexable_posts();
 
 		/** @var Features */
 		$features = Features::factory();
@@ -2313,9 +2317,8 @@ class SearchTest extends WP_UnitTestCase {
 	}
 
 	public function test__maybe_enable_ep_query_logging_filtered_cap() {
-		add_filter( 'vip_search_dev_tools_cap', function () {
-			return 'edit_posts';
-		} );
+		add_filter( 'vip_search_dev_tools_cap', fn () => 'edit_posts' );
+
 		$editor = $this->factory()->user->create_and_get( array( 'role' => 'editor' ) );
 		wp_set_current_user( $editor->ID );
 
