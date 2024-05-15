@@ -1,0 +1,22 @@
+#!/bin/sh
+
+NETWORK_NAME=wp-test-network
+DB_CONTAINER_NAME=wp-test-db
+
+if [ -z "$(docker network ls -q -f name="${NETWORK_NAME}")" ]; then
+    docker network create "${NETWORK_NAME}"
+fi
+
+if [ -z "$(docker container ls -q -f name="${DB_CONTAINER_NAME}")" ]; then
+    docker run --rm -d \
+        --network "${NETWORK_NAME}" \
+        --name "${DB_CONTAINER_NAME}" \
+        -e MYSQL_ROOT_PASSWORD=wordpress \
+        -e MYSQL_INITDB_SKIP_TZINFO=1 \
+        -e MYSQL_USER=wordpress \
+        -e MYSQL_PASSWORD=wordpress \
+        -e MYSQL_DATABASE=wordpress_test \
+        mysql:8
+fi
+
+exec "$(dirname "$0")/test.sh" --network "${NETWORK_NAME}" --dbhost "${DB_CONTAINER_NAME}" "$@"
