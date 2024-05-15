@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - trunk
+  pull_request:
+    branches:
+      - trunk
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: Run tests (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    services:
+      mysql:
+        image: mysql:8
+        ports:
+          - "3306:3306"
+        env:
+          MYSQL_ROOT_PASSWORD: wordpress
+          MYSQL_INITDB_SKIP_TZINFO: 1
+          MYSQL_USER: wordpress
+          MYSQL_PASSWORD: wordpress
+          MYSQL_DATABASE: wordpress_test
+    strategy:
+      fail-fast: false
+      matrix:
+        php:
+          - "8.0"
+          - "8.1"
+          - "8.2"
+          - "8.3"
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@a4aa98b93cab29d9b1101a6143fb8bce00e2eac4 # v2.7.1
+        with:
+          egress-policy: audit
+
+      - name: Check out the code
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b # v4.1.5
+        with:
+          submodules: recursive
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@c665c7a15b5295c2488ac8a87af9cb806cd72198 # 2.30.4
+        with:
+          php-version: ${{ matrix.php }}
+        env:
+          fail-fast: 'true'
+
+      - name: Install Composer Dependencies
+        uses: ramsey/composer-install@57532f8be5bda426838819c5ee9afb8af389d51a # 3.0.0
+
+      - name: Set up WordPress and WordPress Test Library
+        uses: sjinks/setup-wordpress-test-library@badbd264eafbfd40b3d1c280b08c83ff1b500334 # 2.0.2
+
+      - name: Verify MariaDB connection
+        timeout-minutes: 1
+        run: |
+          echo Waiting for MySQL to come online...
+          while ! mysqladmin ping -h 127.0.0.1 -P 3306 --silent; do
+            sleep 1
+          done
+
+      - name: Run tests
+        run: composer test

@@ -386,8 +386,8 @@ class SearchTest extends WP_UnitTestCase {
 		add_filter( 'pre_count_users', $return_big_count );
 
 		$indexable = Indexables::factory()->get( 'user' );
-		$mapping  = $indexable->generate_mapping();
-		$settings = $mapping['settings'];
+		$mapping   = $indexable->generate_mapping();
+		$settings  = $mapping['settings'];
 		$this->assertEquals( 4, $settings['index.number_of_shards'] );
 	}
 

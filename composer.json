@@ -38,6 +38,6 @@
     "scripts": {
         "phpcs": "phpcs",
         "phpcbf": "phpcbf",
-        "test": "phpunit"
+        "test": "phpunit --order-by=random"
     }
 }
