@@ -227,6 +227,7 @@ class Search {
 		$endpoints_defined = defined( 'VIP_ELASTICSEARCH_ENDPOINTS' ) && is_array( constant( 'VIP_ELASTICSEARCH_ENDPOINTS' ) ) && ! empty( constant( 'VIP_ELASTICSEARCH_ENDPOINTS' ) );
 		$username_defined  = defined( 'VIP_ELASTICSEARCH_USERNAME' ) && constant( 'VIP_ELASTICSEARCH_USERNAME' );
 		$password_defined  = defined( 'VIP_ELASTICSEARCH_PASSWORD' ) && constant( 'VIP_ELASTICSEARCH_PASSWORD' );
+
 		return $endpoints_defined && $username_defined && $password_defined;
 	}
 
@@ -765,7 +766,7 @@ class Search {
 	 */
 	public static function should_load_es_wp_query() {
 		// Don't load if plugin already loaded elsewhere.
-		if ( class_exists( '\\ES_WP_Query_Shoehorn' ) ) {
+		if ( class_exists( '\\ES_WP_Query_Shoehorn', false ) ) {
 			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			_doing_it_wrong( self::class . '::' . __FUNCTION__, "Search: tried to load 'es-wp-query', but another copy is already loaded. Please disable your copy of 'es-wp-query'.", null );
 			return false;
@@ -901,7 +902,7 @@ class Search {
 			$args['headers'],
 			[
 				'X-Client-Site-ID' => FILES_CLIENT_SITE_ID,
-				'X-Client-Env'     => VIP_GO_ENV,
+				'X-Client-Env'     => constant( 'VIP_GO_ENV' ),
 				'Accept-Encoding'  => 'gzip, deflate',
 				'X-Opaque-Id'      => $x_opaque_id,
 			]
@@ -954,16 +955,19 @@ class Search {
 		 */
 		if ( 'query' === $type && function_exists( 'vip_safe_wp_remote_request' ) ) {
 			$response = vip_safe_wp_remote_request( $query['url'], false, 5, $timeout, 10, $args );
-			self::query_count_incr();
 		} else {
 			$args['timeout'] = $timeout;
 			$response        = wp_remote_request( $query['url'], $args );
 		}
 
+		if ( 'query' === $type ) {
+			static::query_count_incr();
+		}
+
 		$end_time = microtime( true );
 		$duration = ( $end_time - $start_time ) * 1000;
 
-		if ( class_exists( Prometheus_Collector::class ) ) {
+		if ( class_exists( Prometheus_Collector::class, false ) ) {
 			Prometheus_Collector::increment_query_counter( $args['method'] ?? 'post', $query['url'] );
 		}
 
@@ -983,12 +987,12 @@ class Search {
 			$response_body      = json_decode( $response_body_json, true );
 
 			if ( $response_body && isset( $response_body['took'] ) && is_int( $response_body['took'] ) ) {
-				if ( class_exists( Prometheus_Collector::class ) ) {
+				if ( class_exists( Prometheus_Collector::class, false ) ) {
 					Prometheus_Collector::observe_request_time( $args['method'] ?? 'post', $query['url'], Prometheus_Collector::OBSERVATION_TYPE_ENGINE, (float) $response_body['took'] );
 				}
 			}
 
-			if ( class_exists( Prometheus_Collector::class ) ) {
+			if ( class_exists( Prometheus_Collector::class, false ) ) {
 				Prometheus_Collector::observe_request_time( $args['method'] ?? 'post', $query['url'], Prometheus_Collector::OBSERVATION_TYPE_REQUEST, (float) $duration );
 			}
 
@@ -1137,7 +1141,7 @@ class Search {
 			$error_messages        = $response->get_error_messages();
 			$response_failure_code = $response->get_error_code();
 
-			if ( class_exists( Prometheus_Collector::class ) ) {
+			if ( class_exists( Prometheus_Collector::class, false ) ) {
 				foreach ( $error_messages as $error_message ) {
 					$reason = $this->is_curl_timeout( $error_message ) ? Prometheus_Collector::QUERY_FAILED_TIMEOUT : Prometheus_Collector::QUERY_FAILED_ERROR;
 					Prometheus_Collector::increment_failed_query_counter( $query_method, $query['url'], $reason );
@@ -1158,7 +1162,7 @@ class Search {
 				(string) $response_code . ' ' . $response_message : 'Unknown Elasticsearch query error';
 			}
 
-			if ( class_exists( Prometheus_Collector::class ) ) {
+			if ( class_exists( Prometheus_Collector::class, false ) ) {
 				Prometheus_Collector::increment_failed_query_counter( $query_method, $query['url'] ?? '', Prometheus_Collector::QUERY_FAILED_ERROR );
 			}
 
@@ -1361,7 +1365,7 @@ class Search {
 	public function record_ratelimited_query_stat() {
 		$indexable = $this->indexables->get( 'post' );
 
-		if ( ! $indexable || ! class_exists( Prometheus_Collector::class ) ) {
+		if ( ! $indexable || ! class_exists( Prometheus_Collector::class, false ) ) {
 			return;
 		}
 

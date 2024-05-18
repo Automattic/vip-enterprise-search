@@ -1,6 +1,7 @@
 {
     "name": "automattic/vip-enterprise-search",
     "description": "Power your site search and other queries with Elasticsearch",
+    "license": "GPL-2.0-or-later",
     "type": "wordpress-plugin",
     "require-dev": {
         "automattic/vipwpcs": "^3.0",
@@ -9,6 +10,16 @@
         "wp-cli/wp-cli": "^2.10",
         "wp-phpunit/wp-phpunit": "^6.5",
         "yoast/phpunit-polyfills": "^2.0"
+    },
+    "autoload": {
+        "classmap": [
+            "./src"
+        ]
+    },
+    "autoload-dev": {
+        "classmap": [
+            "./tests/php/internal"
+        ]
     },
     "authors": [
         {
@@ -26,6 +37,7 @@
     },
     "scripts": {
         "phpcs": "phpcs",
-        "phpcbf": "phpcbf"
+        "phpcbf": "phpcbf",
+        "test": "phpunit --order-by=random"
     }
 }
