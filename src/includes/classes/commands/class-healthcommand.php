@@ -486,4 +486,89 @@ class HealthCommand extends WP_CLI_Command {
 	private function get_last( $array ) {
 		return end( $array );
 	}
+
+	/**
+	 * Validate DB and ES index contents for all terms.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--start_term_id=<int>]
+	 * : Starting term id to check.
+	 * ---
+	 * default: 1
+	 * ---
+	 *
+	 * [--last_term_id=<int>]
+	 * : Last term id to check.
+	 *
+	 * [--batch_size=<int>]
+	 * : Batch size.
+	 * ---
+	 * default: 500
+	 * ---
+	 *
+	 * [--max_diff_size=<int>]
+	 * : Max count of objects before exiting.
+	 * ---
+	 * default: 1000
+	 * ---
+	 *
+	 * [--format=<string>]
+	 * : Format of output display.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - json
+	 *   - csv
+	 *   - yaml
+	 * ---
+	 *
+	 * [--silent]
+	 * : Whether to silence all non-error output except for the final results.
+	 *
+	 * [--force_parallel_execution]
+	 * : Whether to force execution even if the process is already ongoing.
+	 *
+	 * ## EXAMPLES
+	 *     wp vip-search health validate-terms-content
+	 *
+	 * @subcommand validate-terms-content
+	 */
+	public function validate_terms_content( $args, $assoc_args ) {
+		$health = new \Automattic\VIP\Search\Health( \Automattic\VIP\Search\Search::instance() );
+
+		$results = $health->validate_index_terms_content( $assoc_args );
+
+		if ( is_wp_error( $results ) ) {
+			if ( $results->get_error_code() === 'es_validate_content_aborted' ) {
+				WP_CLI::error( $results->get_error_message() );
+			}
+
+			$diff = $results->get_error_data( 'diff' );
+
+			if ( ! empty( $diff ) ) {
+				$this->render_contents_diff( $diff, $assoc_args['format'], $assoc_args['max_diff_size'] );
+			}
+
+			$message = $results->get_error_message();
+			if ( 'es_content_validation_already_ongoing' === $results->get_error_code() ) {
+				$message .= "\n\nYou can use --force_parallel_execution to run the command even with the lock in place";
+			}
+			WP_CLI::error( $message );
+		}
+
+		if ( empty( $results ) ) {
+			if ( ! isset( $assoc_args['silent'] ) ) {
+				WP_CLI::success( 'No inconsistencies found!' );
+			}
+			exit();
+		}
+
+		if ( ! isset( $assoc_args['silent'] ) ) {
+			WP_CLI::warning( 'Found the following inconsistencies:' );
+		}
+
+		$this->render_contents_diff( $results, $assoc_args['format'], $assoc_args['max_diff_size'], isset( $assoc_args['silent'] ) );
+	}
 }

@@ -151,6 +151,64 @@ class Health {
 		return $result;
 	}
 
+
+	public function get_index_term_docs( array $query_args, \ElasticPress\Indexable $indexable ) {
+		global $wpdb;
+
+		$result = array(
+			'entity'  => $indexable->slug,
+			'type'    => $query_args['taxonomy'] ?? 'N/A',
+			'skipped' => false,
+			'reason'  => 'N/A',
+			'db_docs' => array(),
+			'es_docs' => array(),
+		);
+
+		if ( ! $indexable->index_exists() ) {
+			// If index doesnt exist and we will skip the rest of the check
+			$result['skipped'] = true;
+			$result['reason']  = 'index-not-found';
+			return $result;
+		}
+
+		// Create ES specific query args
+		$es_query_args          = $query_args;
+		$es_query_args['orderby'] = 'term_id';
+		$es_query_args['order'] = 'ASC';
+
+		$es_result = $this->get_index_entity_terms_from_elastic_search( $es_query_args, $indexable );
+		if ( is_wp_error( $es_result ) ) {
+			return $es_result;
+		}
+
+		try {
+			$taxonomy = 'post_tag'; // Change to your desired taxonomy
+			$limit    = $query_args['size'] ?? 500;
+
+			// use driect db query because WP_Term_Query only wants to order by term_order
+			$db_query = $wpdb->prepare(
+				"SELECT t.term_id, t.name 
+				FROM {$wpdb->terms} AS t
+				INNER JOIN {$wpdb->term_taxonomy} AS tt ON t.term_id = tt.term_id
+				WHERE tt.taxonomy = %s
+				ORDER BY t.term_id ASC
+				LIMIT %d",
+				$taxonomy,
+				$limit
+			);
+
+			$db_result = $wpdb->get_results( $db_query );
+
+		} catch ( \Exception $e ) {
+			return new WP_Error( 'es_db_query_error', sprintf( 'failure querying the DB: %s #vip-search', $e->getMessage() ) );
+		}
+
+		$result['db_docs'] = $db_result;
+		$result['es_docs'] = $es_result;
+
+		return $result;
+	}
+
 	/**
 	 * Fetches the count of entities in ES index
 	 * Entities can be either posts or users.
@@ -205,6 +263,47 @@ class Health {
 		}
 
 		return (int) $es_result['found_documents']['value'];
+	}
+
+	public function get_index_entity_terms_from_elastic_search( array $query_args, \ElasticPress\Indexable $indexable ) {
+		// Get total count in ES index
+		try {
+			$query = self::query_objects( $query_args, $indexable->slug );
+
+			// An improperly formatted ES args filter can break the `wp vip-search health validate-counts` CLI.
+			remove_all_filters( 'ep_formatted_args' );
+			remove_all_filters( 'ep_post_formatted_args' );
+
+			$formatted_args = $indexable->format_args( $query->query_vars, $query );
+
+			// Get exact total count since Elasticsearch default stops at 10,000.
+			$formatted_args['track_total_hits'] = true;
+			// We want the _id field in the source
+			$formatted_args['_source'] = true;
+			// Limit results to batch size
+			$formatted_args['size'] = $query_args['size'] ?? 500;
+
+			$es_result = $indexable->query_es( $formatted_args, $query->query_vars );
+
+			// Add _id to each hit in the results
+			if ( isset( $es_result['documents'] ) && is_array( $es_result['documents'] ) ) {
+				foreach ( $es_result['documents'] as $key => $document ) {
+					if ( isset( $es_result['hits']['hits'][ $key ]['_id'] ) ) {
+						$es_result['documents'][ $key ]['_id'] = $es_result['hits']['hits'][ $key ]['_id'];
+					}
+				}
+			}       
+		} catch ( \Exception $e ) {
+			return new WP_Error( 'es_query_error', sprintf( 'failure querying ES: %s #vip-search', $e->getMessage() ) );
+		}
+
+		// There is not other useful information out of query_es(): it just returns false in case of failure.
+		// This may be due to different causes, e.g. index not existing or incorrect connection parameters.
+		if ( ! $es_result ) {
+			return new WP_Error( 'es_query_error', 'failure querying ES. #vip-search' );
+		}
+
+		return (array) $es_result['documents'];
 	}
 
 	/**
@@ -431,6 +530,85 @@ class Health {
 		$search->versioning->reset_current_version_number( $comments );
 
 		return $results;
+	}
+
+	/**
+	 * Validate DB and ES index term content
+	 *
+	 * @param array $options list of options
+	 *
+	 * @return array Array containing counts and ids of terms with inconsistent content
+	 */
+	public function validate_index_terms_content( $options ) {
+		$terms = Indexables::factory()->get( 'term' );
+		$show_all = false;
+		$batch_size = 2000; // Change this single number to modify batch size for both queries
+
+		// Indexables::factory()->get() returns boolean|array
+		// False is returned in case of error
+		if ( ! $terms ) {
+			return new WP_Error( 'es_terms_query_error', 'failure retrieving term indexable from ES #vip-search' );
+		}
+
+		$search = \Automattic\VIP\Search\Search::instance();
+
+		if ( $options['index_version'] ) {
+			$version_result = $search->versioning->set_current_version_number( $terms, $options['index_version'] );
+
+			if ( is_wp_error( $version_result ) ) {
+				return $version_result;
+			}
+		}
+
+		$index_version = $search->versioning->get_current_version_number( $terms );
+
+		$query_args = array(
+			'order' => 'asc',
+			'size'  => $batch_size, // This will be used by both ES and DB queries
+		);
+
+		$result = ( new self( $search ) )->get_index_term_docs( $query_args, $terms );
+		if ( is_wp_error( $result ) ) {
+			return new WP_Error( 'es_terms_query_error', sprintf( 'failure retrieving terms from ES: %s #vip-search', $result->get_error_message() ) );
+		}
+
+		$db_docs = $result['db_docs'];
+		$es_docs = $result['es_docs'];
+
+		// Format the results into a consistent structure
+		$formatted_results = array();
+		
+		// Compare DB and ES docs to find inconsistencies
+		foreach ($db_docs as $db_doc) {
+			$term_id = $db_doc->term_id;
+			$found_in_es = false;
+			
+			foreach ($es_docs as $es_doc) {
+				if ($es_doc['term_id'] == $term_id) {
+					$found_in_es = true;
+					break;
+				}
+			}
+			
+			// Only add to results if show_all is true or if the term is missing from ES
+			if ($show_all || !$found_in_es) {
+				$formatted_results[] = [
+					'Term name' => $db_doc->name,
+					'term_id' => $term_id,
+					'in_es' => $found_in_es ? '✓ ' : '✘',
+				];
+			}
+		}
+
+		return $formatted_results;
+	}
+
+	/**
+	 * Get the last term ID from the database
+	 */
+	private static function get_last_term_id() {
+		global $wpdb;
+		return (int) $wpdb->get_var( "SELECT MAX(term_id) FROM $wpdb->terms" );
 	}
 
 	/**
