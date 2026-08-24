@@ -755,7 +755,8 @@ class QueueTest extends WP_UnitTestCase {
 		$sync_manager             = new stdClass();
 		$sync_manager->sync_queue = range( 3, 9 );
 
-		$this->queue::$max_indexing_op_count = PHP_INT_MAX; // Ensure ratelimiting is disabled
+		// Ensure ratelimiting is disabled.
+		Queue::$max_indexing_op_count = PHP_INT_MAX;
 
 		$this->queue->ratelimit_indexing( true, $sync_manager, 'post' );
 
@@ -805,8 +806,9 @@ class QueueTest extends WP_UnitTestCase {
 		$current_bail = apply_filters( 'pre_ep_index_sync_queue', false, $sync_manager, 'post' );
 		$this->assertTrue( $current_bail );
 
-		$sync_manager->sync_queue            = range( 3, 9 );
-		$this->queue::$max_indexing_op_count = 0; // Ensure ratelimiting is enabled
+		$sync_manager->sync_queue = range( 3, 9 );
+		// Ensure ratelimiting is enabled.
+		Queue::$max_indexing_op_count = 0;
 
 		$this->queue->ratelimit_indexing( true, $sync_manager, 'post' );
 
