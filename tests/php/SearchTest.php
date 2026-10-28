@@ -2449,6 +2449,9 @@ class SearchTest extends WP_UnitTestCase {
 		$this->init_es( false );
 
 		Features::factory()->activate_feature( 'searchordering' );
+		// init_es( false ) skips `init`, where the feature registers ep-pointer. Since WordPress 7.1.3,
+		// `publish_ep-pointer` and `trash_ep-pointer` only fire for registered post types.
+		Features::factory()->get_registered_feature( 'searchordering' )->register_post_type();
 
 		$post = wp_insert_post( [
 			'post_type'   => 'ep-pointer',
